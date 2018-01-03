@@ -1,57 +1,83 @@
 package com.gcit.lms.dao;
 
 import java.sql.Connection;
-import java.sql.Date;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.jdbc.core.PreparedStatementCreator;
 import org.springframework.jdbc.core.ResultSetExtractor;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 
-import com.gcit.lms.entity.Author;
-import com.gcit.lms.entity.Book;
-import com.gcit.lms.entity.BookCopies;
-import com.gcit.lms.entity.BookLoans;
-import com.gcit.lms.entity.Borrower;
 import com.gcit.lms.entity.*;
+
 
 public class BorrowerDAO extends BaseDAO<Borrower> implements ResultSetExtractor<List<Borrower>>{
 	
-	
-	public void addBorrower(Borrower borrower) throws InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException{
-		jdbcTemplate.update("insert into tbl_borrower (name, address, phone) values (?, ?, ?)", new Object[]{borrower.getName(), borrower.getAddress(), borrower.getPhone()});
-	}
-	
-	public void updateBorrower(Borrower borrower) throws InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException{
-		jdbcTemplate.update("update tbl_borrower set name = ?, address = ?, phone = ? where cardNo = ? ", 
-				new Object[] {borrower.getName(), borrower.getAddress(), borrower.getPhone(), borrower.getCardNo()});
-	}
-	
-	public void deleteBorrower(Borrower borrower) throws InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException{
-		jdbcTemplate.update("delete from tbl_borrower where cardNo = ?", new Object[]{borrower.getCardNo()});
+	public void addBorrower(Borrower borrower)
+			throws SQLException, InstantiationException, IllegalAccessException, ClassNotFoundException {
+		jdbcTemplate.update("INSERT INTO tbl_borrower (name, address, phone) "
+				+ "VALUES (?,?,?)", new Object[] { borrower.getName(),
+						borrower.getAddress(),borrower.getPhone()});
 	}
 
-	public List<Borrower> readAllborrowers(int pageNo) throws InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException{
-		setPageNo(pageNo);
-		return jdbcTemplate.query("select * from tbl_borrower", this);
+	public Integer addBorrowerWithID(final Borrower borrower) throws SQLException{
+		KeyHolder holder = new GeneratedKeyHolder();
+		final String sql = "INSERT INTO tbl_borrower (name, address, phone) VALUES (?,?,?)";
+		jdbcTemplate.update(new PreparedStatementCreator() {
+			@Override
+			public PreparedStatement createPreparedStatement(Connection connection) throws SQLException {
+				PreparedStatement ps = connection.prepareStatement(sql.toString(), Statement.RETURN_GENERATED_KEYS);
+				ps.setString(1, borrower.getName());
+				ps.setString(2, borrower.getAddress());
+				ps.setString(3, borrower.getPhone());
+				return ps;
+			}
+		}, holder);
+		return holder.getKey().intValue();
 	}
-	
-	public Integer getCountOfBorrowers() throws InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException{
-		return jdbcTemplate.queryForObject("select count(*) COUNT from tbl_borrower", Integer.class);
+
+	public void updateBorrower(Borrower borrower)
+			throws SQLException, InstantiationException, IllegalAccessException, ClassNotFoundException {
+		jdbcTemplate.update("UPDATE tbl_borrower SET name = ?, address = ?, phone = ? WHERE cardNo = ?",
+				new Object[] { borrower.getName(), borrower.getAddress(),borrower.getPhone(), borrower.getCardNo()});
 	}
-	
-	public Borrower readBorrowerByPK(Integer cardNo) throws InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException{
-		List<Borrower> borrowers =  jdbcTemplate.query("select * from tbl_borrower where cardNo = ?", new Object[]{cardNo}, this);
-		if(!borrowers.isEmpty()){
-			return borrowers.get(0);
+
+	public void deleteBorrower(Borrower borrower)
+			throws SQLException, InstantiationException, IllegalAccessException, ClassNotFoundException {
+		jdbcTemplate.update("DELETE FROM tbl_borrower WHERE cardNo = ?", new Object[] { borrower.getCardNo() });
+	}
+
+	public List<Borrower> readAllBorrowers()
+			throws InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException {
+		return jdbcTemplate.query("SELECT * FROM tbl_borrower", this);
+	}
+	public Borrower readBorrowerByPK(Integer pk)
+			throws InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException {
+		List<Borrower> borrowers= jdbcTemplate.query("SELECT * FROM tbl_borrower WHERE cardNo = ?", new Object[] { pk }, this);
+		
+		if(borrowers.size() == 0)
+		{
+			return null;
 		}
-		return null;
+		
+		
+		if (borrowers != null) {
+			//System.out.println("borrower not null");
+			return borrowers.get(0);
+		} 	
+		else {
+			//System.out.println("borrower null");
+			return null;
+		}
 	}
 	
 	@Override
-	public List<Borrower> extractData(ResultSet rs)
-			throws SQLException {
+	public List<Borrower> extractData(ResultSet rs) throws SQLException {
 		List<Borrower> borrowers = new ArrayList<>();
 		while(rs.next()){
 			Borrower b = new Borrower();
@@ -62,15 +88,6 @@ public class BorrowerDAO extends BaseDAO<Borrower> implements ResultSetExtractor
 			borrowers.add(b);
 		}
 		return borrowers;
-		
 	}
-
-	
-	
-	public List<Borrower> readBorrowersByName(String borrowerName) throws InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException {
-		borrowerName = "%"+borrowerName+"%";
-		return jdbcTemplate.query("select * from tbl_borrower where name LIKE  ?", new Object[]{borrowerName}, this);
-	}
-	
 	
 }

@@ -8,9 +8,9 @@ import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 
+import com.gcit.lms.dao.AuthorDAO;
 import com.gcit.lms.dao.*;
-import com.gcit.lms.dao.BookDAO;
-import com.gcit.lms.service.*;
+import com.gcit.lms.service.AdminService;
 
 @Configuration
 public class LMSConfig {
@@ -18,7 +18,7 @@ public class LMSConfig {
 	public final String driver = "com.mysql.cj.jdbc.Driver";
 	public final String url = "jdbc:mysql://localhost/library";
 	public final String username = "root";
-	public final String password = ""; // enter password
+	public final String password = "";//password
 	
 	@Bean
 	public BasicDataSource dataSource(){
@@ -39,34 +39,34 @@ public class LMSConfig {
 	public AuthorDAO adao(){
 		return new AuthorDAO();
 	}
-	
+		
 	@Bean
 	public BookDAO bdao(){
 		return new BookDAO();
 	}
 	
 	@Bean
-	public BookCopiesDAO bcDao(){
+	public BookCopiesDAO bcdao(){
 		return new BookCopiesDAO();
 	}
 	
 	@Bean
-	public BookLoansDAO blDao(){
+	public BookLoansDAO bldao(){
 		return new BookLoansDAO();
 	}
 	
 	@Bean
-	public BorrowerDAO brDao(){
+	public BorrowerDAO borrowerdao(){
 		return new BorrowerDAO();
 	}
 	
 	@Bean
-	public BranchDAO bnDao(){
+	public BranchDAO brdao(){
 		return new BranchDAO();
 	}
 	
 	@Bean
-	public GenreDAO gDao(){
+	public GenreDAO gdao(){
 		return new GenreDAO();
 	}
 	
@@ -76,12 +76,12 @@ public class LMSConfig {
 	}
 	
 	@Bean
-	public PlatformTransactionManager txManager(){
-		return new DataSourceTransactionManager(dataSource());
-	}	
-	
-	@Bean
 	public AdminService adminService(){
 		return new AdminService();
+	}
+
+	@Bean
+	public PlatformTransactionManager txManager(){
+		return new DataSourceTransactionManager(dataSource());
 	}
 }
